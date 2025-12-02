@@ -35,7 +35,7 @@ export default function RegisterPage() {
       <div className="flex h-screen font-albert">
         {/*Columna izquierda*/}
         <div className="w-[45%] flex-col justify-center flex px-10">
-          <h1 className="text-[32px] font-bold mb-5 -mt-50">Ingresa tus datos para iniciar</h1>
+          <h1 className="text-[32px] font-bold mb-5 -mt-50">Completa tu perfil</h1>
 
           {error && (
             <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
@@ -46,7 +46,7 @@ export default function RegisterPage() {
           <label className="mt-4 text-base">Nombre</label>
           <input
             type="string"
-            placeholder="Ingresa tu correo"
+            placeholder="Ingresa tu nombre"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300"
