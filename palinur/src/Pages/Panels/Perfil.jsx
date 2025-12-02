@@ -9,11 +9,11 @@ export default function Perfil() {
       <h2 className="text-center text-2xl font-semibold">Felipe, 22</h2>
 
       {/* Sección fotos */}
-      <div>
+      <div className="items-center">
         <h3 className="font-semibold mb-2">Fotos</h3>
 
-        <div className="grid grid-cols-3 gap-3">
-          <div className="w-20 h-20 bg-gray-200 rounded flex items-center justify-center text-3xl">+</div>
+        <div className="grid grid-cols-3 gap-5">
+          <label className="w-20 h-20 bg-gray-200 rounded flex items-center justify-center text-3xl cursor-pointer"><input type="file" className="hidden"></input>+</label>
           <div className="w-20 h-20 bg-gray-200 rounded" />
           <div className="w-20 h-20 bg-gray-200 rounded" />
           <div className="w-20 h-20 bg-gray-200 rounded" />

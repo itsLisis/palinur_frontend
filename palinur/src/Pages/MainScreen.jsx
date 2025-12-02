@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import LeftPanel from "./LeftPanel"
 import RightPanel from "./RightPanel"
 
-export default function SplitScreen() {   
+export default function MainScreen() {   
     return (
 
     
@@ -16,7 +16,7 @@ export default function SplitScreen() {
     </div>
 
         
-    <div className="w-2/3 h-full flex items-center justify-center bg-gradient-to-b from-[#FF8269] to-[#1A2E53]">
+    <div className="w-2/3 h-full flex items-center justify-center bg-[linear-gradient(to_bottom,rgba(235,130,105,0.8)_0%,rgba(235,130,105,0.8)_40%,rgba(26,43,86,0.8)_100%)]">
         <RightPanel />
     </div>
 

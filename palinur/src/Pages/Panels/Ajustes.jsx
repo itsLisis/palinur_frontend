@@ -1,13 +1,29 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import  AgeSlider  from "../../Components/AgeSlider"
+
 export default function Ajustes() {
+  const [ageRange, setAgeRange] = useState({min:18, max:99});
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const handleAgeChange = (newRange) => {
+    setAgeRange(newRange);
+  };
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
   return (
     <div className="flex flex-col gap-6">
 
-      <h2 className="font-semibold text-xl">Ajustes</h2>
+      <h2 className="font-semibold text-3xl">Ajustes</h2>
 
       <div className="flex items-center justify-between">
         <span>Notificaciones</span>
         <input type="checkbox" />
       </div>
+      
 
       <div className="flex items-center justify-between">
         <span>Visibilidad del perfil</span>
@@ -16,7 +32,7 @@ export default function Ajustes() {
 
       <div className="flex flex-col">
         <label className="mb-1">Rango de edad</label>
-        <input type="range" min="18" max="50" />
+        <AgeSlider onAgeChange={handleAgeChange}/>
       </div>
 
       <div className="flex flex-col">
@@ -24,7 +40,7 @@ export default function Ajustes() {
         <input type="range" min="1" max="50" />
       </div>
 
-      <button className="bg-red-500 text-white py-2 rounded">
+      <button onClick={handleLogout} className="bg-red-500 text-white py-2 rounded">
         Cerrar sesión
       </button>
 
