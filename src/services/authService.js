@@ -6,7 +6,6 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// Interceptor para agregar token en cada request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
