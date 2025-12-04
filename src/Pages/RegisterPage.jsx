@@ -7,7 +7,6 @@ import { useAuth } from "../context/AuthContext";
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [birthday, setBirthday] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -19,9 +18,13 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(email, password, birthday);
-      // Redirigir a login después del registro exitoso
-      navigate("/");
+      const response = await register(email, password);
+      // Guardar el token
+      if (response.access_token) {
+        localStorage.setItem("token", response.access_token);
+      }
+      // Redirigir a creación de perfil después del registro exitoso
+      navigate("/creacion");
     } catch (err) {
       const errorMsg = err.response?.data?.detail || "Error en el registro";
       setError(typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg));

@@ -3,7 +3,7 @@ import { useState } from "react";
 import PageTransition from "../Components/PageTransitions";
 import ImageSlider from "../Components/ImageSlider";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
+import { authService } from "../services/authService";
 
 export default function UserCreation() {
   const [username, setUsername] = useState("");
@@ -23,8 +23,8 @@ export default function UserCreation() {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:8000/user/complete_profile",
+      const response = await authService.api.post(
+        "/user/complete_profile",
         {
           username,
           introduction,
@@ -32,11 +32,6 @@ export default function UserCreation() {
           sexual_orientation_id: parseInt(sexualOrientationId),
           interest_ids: interestIds,
           image_urls: imageUrls,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }
       );
 
@@ -102,12 +97,10 @@ export default function UserCreation() {
             onChange={(e) => setSexualOrientationId(e.target.value)}
             className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300"
           >
-            <option value="">Selecciona una opción</option>
-            <option value="1">Heterosexual</option>
-            <option value="2">Homosexual</option>
-            <option value="3">Bisexual</option>
-            <option value="4">Asexual</option>
-            <option value="5">Otro</option>
+            <option value="">¿A quién quieres ver?</option>
+            <option value="1">Hombres</option>
+            <option value="2">Mujeres</option>
+            <option value="3">Personas no binarias</option>
           </select>
 
           <button

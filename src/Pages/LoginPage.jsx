@@ -18,8 +18,13 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password);
-      navigate("/principal");
+      const response = await login(email, password);
+      // Si el perfil está completo, ir a principal, si no, a creación
+      if (response.complete_profile) {
+        navigate("/principal");
+      } else {
+        navigate("/creacion");
+      }
     } catch (err) {
       const errorMsg = err.response?.data?.detail || "Error en el login";
       setError(typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg));
