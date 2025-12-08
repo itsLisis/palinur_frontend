@@ -14,7 +14,7 @@ export default function UserCreation() {
   const [imageUrls, setImageUrls] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { token } = useAuth();
+  const { token, updateToken } = useAuth();
   const navigate = useNavigate();
 
   const handleCompleteProfile = async (e) => {
@@ -35,9 +35,9 @@ export default function UserCreation() {
         }
       );
 
-      // Guardar el nuevo token si es necesario
+      // Actualizar el token y el estado de perfil completado
       if (response.data.access_token) {
-        localStorage.setItem("token", response.data.access_token);
+        updateToken(response.data.access_token, response.data.complete_profile);
       }
 
       // Redirigir al home

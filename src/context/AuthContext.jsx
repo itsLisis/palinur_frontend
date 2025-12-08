@@ -55,6 +55,13 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const updateToken = (newToken, newCompleteProfile) => {
+  localStorage.setItem("token", newToken);
+  localStorage.setItem("completeProfile", JSON.stringify(newCompleteProfile));
+  setToken(newToken);
+  setCompleteProfile(newCompleteProfile);
+  };
+
   const logout = () => {
     authService.logout();
     localStorage.removeItem("completeProfile");
@@ -65,7 +72,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, completeProfile, loading, error, login, logout, register }}
+      value={{ user, token, completeProfile, loading, error, login, logout, register, updateToken }}
     >
       {children}
     </AuthContext.Provider>
