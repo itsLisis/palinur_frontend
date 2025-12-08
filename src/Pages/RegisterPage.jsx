@@ -7,7 +7,6 @@ import { useAuth } from "../context/AuthContext";
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [birthday, setBirthday] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -19,9 +18,13 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(email, password, birthday);
-      // Redirigir a login después del registro exitoso
-      navigate("/");
+      const response = await register(email, password);
+      // Guardar el token
+      if (response.access_token) {
+        localStorage.setItem("token", response.access_token);
+      }
+      // Redirigir a creación de perfil después del registro exitoso
+      navigate("/creacion");
     } catch (err) {
       const errorMsg = err.response?.data?.detail || "Error en el registro";
       setError(typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg));
@@ -35,7 +38,7 @@ export default function RegisterPage() {
       <div className="flex h-screen font-albert">
         {/*Columna izquierda*/}
         <div className="w-[45%] flex-col justify-center flex px-10">
-          <h1 className="text-[32px] font-bold mb-5 -mt-50">Completa tu perfil</h1>
+          <h1 className="text-[32px] font-bold mb-5 -mt-50">¡Regístrate!</h1>
 
           {error && (
             <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
@@ -43,10 +46,10 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <label className="mt-4 text-base">Nombre</label>
+          <label className="mt-4 text-base">Correo electrónico</label>
           <input
-            type="string"
-            placeholder="Ingresa tu nombre"
+            type="email"
+            placeholder="Ingresa tu correo"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300"
@@ -61,13 +64,6 @@ export default function RegisterPage() {
             className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300"
           />
 
-          <label className="mt-4 text-base">Fecha de nacimiento</label>
-          <input
-            type="date"
-            value={birthday}
-            onChange={(e) => setBirthday(e.target.value)}
-            className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300"
-          />
 
           <button
             onClick={handleRegister}

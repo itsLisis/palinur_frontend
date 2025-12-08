@@ -6,7 +6,7 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// Interceptor para agregar token en cada request
+// Interceptor para agregar el token a cada solicitud
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -15,12 +15,24 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Interceptor para manejar errores de respuesta
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const authService = {
-  register: async (email, password, birthday) => {
+  api,
+  
+  register: async (email, password) => {
     const response = await api.post("/auth/register", {
       email,
       password,
-      birthday,
     });
     return response.data;
   },
