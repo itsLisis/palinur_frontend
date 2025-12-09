@@ -29,18 +29,20 @@ api.interceptors.response.use(
 export const authService = {
   api,
   
-  register: async (email, password) => {
+  register: async (email, password, turnstile_token) => {
     const response = await api.post("/auth/register", {
       email,
       password,
+      turnstile_token,
     });
     return response.data;
   },
 
-  login: async (email, password) => {
+  login: async (email, password, turnstile_token) => {
     const response = await api.post("/auth/login", {
       email,
       password,
+      turnstile_token,
     });
     return response.data;
   },

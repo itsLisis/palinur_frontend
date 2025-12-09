@@ -23,10 +23,10 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, turnstile_token) => {
     try {
       setError(null);
-      const response = await authService.login(email, password);
+      const response = await authService.login(email, password, turnstile_token);
       localStorage.setItem("token", response.access_token);
       localStorage.setItem("completeProfile", JSON.stringify(response.complete_profile));
       setToken(response.access_token);
@@ -39,10 +39,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (email, password) => {
+  const register = async (email, password, turnstile_token) => {
     try {
       setError(null);
-      const response = await authService.register(email, password);
+      const response = await authService.register(email, password, turnstile_token);
       localStorage.setItem("token", response.access_token);
       localStorage.setItem("completeProfile", JSON.stringify(response.complete_profile));
       setToken(response.access_token);

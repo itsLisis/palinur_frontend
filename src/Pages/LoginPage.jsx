@@ -3,12 +3,14 @@ import { useState } from "react";
 import PageTransition from "../Components/PageTransitions";
 import ImageSlider from "../Components/ImageSlider";
 import { useAuth } from "../context/AuthContext";
+import TurnstileWidget from "../Components/Turnstile";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -17,8 +19,14 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
+    if (!turnstileToken) {
+      setError("Por favor completa la verificación");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await login(email, password);
+      const response = await login(email, password, turnstileToken);
       if (response.complete_profile) {
         navigate("/principal");
       } else {
@@ -69,6 +77,9 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300"
           />
+          <div className="mt-4 flex justify-center">
+            <TurnstileWidget onVerify={setTurnstileToken} />
+          </div>
 
           <button
             onClick={handleLogin}
