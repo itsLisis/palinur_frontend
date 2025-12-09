@@ -19,7 +19,6 @@ export default function LoginPage() {
 
     try {
       const response = await login(email, password);
-      // Si el perfil está completo, ir a principal, si no, a creación
       if (response.complete_profile) {
         navigate("/principal");
       } else {

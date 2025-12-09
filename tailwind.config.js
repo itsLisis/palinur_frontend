@@ -19,6 +19,7 @@ module.exports = {
       animation: {
         "slide-left": "slideLeft 0.5s forwards",
         "slide-right": "slideRight 0.5s forwards",
+        "fade-away": "fadeaway 0.4s ease forwards"
       },
       fontFamily: {
         albert: ["'Albert Sans'", "sans-serif"],
