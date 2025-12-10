@@ -14,10 +14,35 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  const validatePassword = (password) => {
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasMinLength = password.length >= 8;
+    
+    if (!hasMinLength) {
+      return "La contraseña debe tener al menos 8 caracteres";
+    }
+    if (!hasUpperCase) {
+      return "La contraseña debe contener al menos una mayúscula";
+    }
+    if (!hasNumber) {
+      return "La contraseña debe contener al menos un número";
+    }
+    return null;
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
+    // Validate password
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
+      setLoading(false);
+      return;
+    }
 
     if (!turnstileToken) {
       setError("Por favor completa la verificación");
@@ -71,6 +96,9 @@ export default function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300"
           />
+          <p className="text-xs text-gray-600 mt-1">
+            La contraseña debe tener al menos 8 caracteres, una mayúscula y un número
+          </p>
           <div className="mt-4 flex justify-center">
             <TurnstileWidget onVerify={setTurnstileToken} />
           </div>

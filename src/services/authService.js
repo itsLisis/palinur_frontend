@@ -54,4 +54,26 @@ export const authService = {
   getToken: () => {
     return localStorage.getItem("token");
   },
+
+  getUserProfile: async () => {
+    const response = await api.get("/user/profile");
+    return response.data;
+  },
+
+  uploadProfileImage: async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    
+    const response = await api.post("/user/profile/upload-image", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  deleteProfileImage: async (imageId) => {
+    const response = await api.delete(`/user/profile/image/${imageId}`);
+    return response.data;
+  },
 };

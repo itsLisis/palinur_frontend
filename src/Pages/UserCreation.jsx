@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageTransition from "../Components/PageTransitions";
 import ImageSlider from "../Components/ImageSlider";
 import { useAuth } from "../context/AuthContext";
@@ -9,13 +9,48 @@ export default function UserCreation() {
   const [username, setUsername] = useState("");
   const [introduction, setIntroduction] = useState("");
   const [birthday, setBirthday] = useState("");
+  const [genderId, setGenderId] = useState("");
   const [sexualOrientationId, setSexualOrientationId] = useState("");
   const [interestIds, setInterestIds] = useState([]);
   const [imageUrls, setImageUrls] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Datos desde el backend
+  const [genders, setGenders] = useState([]);
+  const [sexualOrientations, setSexualOrientations] = useState([]);
+  const [interests, setInterests] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+  
   const { token, updateToken } = useAuth();
   const navigate = useNavigate();
+
+  // Cargar opciones al montar el componente
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        const response = await authService.api.get("/user/complete_profile");
+        setGenders(response.data.genders || []);
+        setSexualOrientations(response.data.sexual_orientations || []);
+        setInterests(response.data.interests || []);
+      } catch (err) {
+        setError("Error al cargar las opciones");
+        console.error(err);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    
+    loadOptions();
+  }, []);
+
+  const toggleInterest = (interestId) => {
+    setInterestIds(prev => 
+      prev.includes(interestId) 
+        ? prev.filter(id => id !== interestId)
+        : [...prev, interestId]
+    );
+  };
 
   const handleCompleteProfile = async (e) => {
     e.preventDefault();
@@ -29,6 +64,7 @@ export default function UserCreation() {
           username,
           introduction,
           birthday,
+          gender_id: parseInt(genderId),
           sexual_orientation_id: parseInt(sexualOrientationId),
           interest_ids: interestIds,
           image_urls: imageUrls,
@@ -57,13 +93,17 @@ export default function UserCreation() {
     <PageTransition direction="right">
       <div className="flex h-screen font-albert">
         {/*Columna izquierda*/}
-        <div className="w-[45%] flex-col justify-center flex px-10 overflow-y-auto">
-          <h1 className="text-[32px] font-bold mb-5 -mt-20">Completa tu perfil</h1>
+        <div className="w-[45%] flex-col justify-center flex px-10 overflow-y-auto py-8">
+          <h1 className="text-[32px] font-bold mb-5">Completa tu perfil</h1>
 
           {error && (
             <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
               {error}
             </div>
+          )}
+
+          {loadingData && (
+            <div className="text-center p-4">Cargando opciones...</div>
           )}
 
           <label className="mt-4 text-base">Nombre de usuario</label>
@@ -91,6 +131,20 @@ export default function UserCreation() {
             className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300"
           />
 
+          <label className="mt-4 text-base">Género</label>
+          <select
+            value={genderId}
+            onChange={(e) => setGenderId(e.target.value)}
+            className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="">Selecciona tu género</option>
+            {genders.map((gender) => (
+              <option key={gender.id} value={gender.id}>
+                {gender.gender_name}
+              </option>
+            ))}
+          </select>
+
           <label className="mt-4 text-base">Orientación sexual</label>
           <select
             value={sexualOrientationId}
@@ -98,10 +152,30 @@ export default function UserCreation() {
             className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300"
           >
             <option value="">¿A quién quieres ver?</option>
-            <option value="1">Hombres</option>
-            <option value="2">Mujeres</option>
-            <option value="3">Personas no binarias</option>
+            {sexualOrientations.map((orientation) => (
+              <option key={orientation.id} value={orientation.id}>
+                {orientation.orientation_name}
+              </option>
+            ))}
           </select>
+
+          <label className="mt-4 text-base">Intereses (selecciona varios)</label>
+          <div className="mt-2 flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border border-gray-300 rounded-md">
+            {interests.map((interest) => (
+              <button
+                key={interest.id}
+                type="button"
+                onClick={() => toggleInterest(interest.id)}
+                className={`px-4 py-2 rounded-full text-sm transition ${
+                  interestIds.includes(interest.id)
+                    ? "bg-[#CE603E] text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {interest.interest_name}
+              </button>
+            ))}
+          </div>
 
           <button
             onClick={handleCompleteProfile}
