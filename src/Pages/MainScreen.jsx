@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom"
 import LeftPanel from "./LeftPanel"
 import RightPanel from "./RightPanel"
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { HeartIcon } from "@heroicons/react/24/solid";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 export default function MainScreen() {  
     const [animation, setAnimation] = useState();
     const [buttonFade, setButtonFade] = useState();
+    const loadNextProfileRef = useRef(null);
     
     const animateLeft = () => {
         setAnimation("animate-slide-left");
@@ -15,7 +16,11 @@ export default function MainScreen() {
         setTimeout(() => {
           setAnimation("");
           setButtonFade("");
-          }, 500);
+          // Cargar siguiente perfil después de la animación
+          if (loadNextProfileRef.current) {
+            loadNextProfileRef.current();
+          }
+        }, 500);
     };
 
     const animateRight = () => {
@@ -24,7 +29,11 @@ export default function MainScreen() {
         setTimeout(() => {
           setAnimation("");
           setButtonFade("");
-          }, 500);
+          // Cargar siguiente perfil después de la animación
+          if (loadNextProfileRef.current) {
+            loadNextProfileRef.current();
+          }
+        }, 500);
     };
     return (
 
@@ -57,7 +66,7 @@ export default function MainScreen() {
             </button>
         </div>
         <div className={`flex items-center justify-center w-full h-full ${animation}`}>
-          <RightPanel />
+          <RightPanel loadNextProfileRef={loadNextProfileRef} />
         </div>
     </div>
 

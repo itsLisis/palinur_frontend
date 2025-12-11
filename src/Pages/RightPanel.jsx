@@ -1,38 +1,97 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
+import { authService } from "../services/authService";
 
-export default function RightPanel({ animation }) {
+export default function RightPanel({ loadNextProfileRef }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Datos sincronizados por slide
-  const profileData = {
-    slides: [
-      {
-        image: "/jero.jpg",
-        type: "basic",
-        name: "Jerónimo",
-        age: 22,
-      },
-      {
-        image: "/jero.jpg",
-        type: "description",
-        description: "Me encanta viajar y conocer gente nueva. Soy músico y amante del arte, toco guitarra desde los 12 años.",
-      },
-      {
-        image: "/jero.jpg",
-        type: "interests",
-        interests: ["Música", "Viajes", "Senderismo", "Fotografía", "Arte"],
-      },
-      {
-        image: "/jero.jpg",
-        type: "custom",
-        title: "Buscando conexiones reales",
-        content: "Valoro la honestidad y las buenas conversaciones.",
-      },
-    ],
+  const loadRandomProfile = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await authService.getRandomProfile();
+      setProfile(data);
+      setCurrentIndex(0);
+    } catch (err) {
+      setError("Error al cargar perfil");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const totalSlides = profileData.slides.length;
+  useEffect(() => {
+    loadRandomProfile();
+    
+    // Asignar la función al ref para que MainScreen pueda llamarla
+    if (loadNextProfileRef) {
+      loadNextProfileRef.current = loadRandomProfile;
+    }
+  }, [loadNextProfileRef]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center max-w-[860px] w-full max-h-[720px] h-full bg-white rounded-xl">
+        <p className="text-gray-500">Cargando perfil...</p>
+      </div>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="flex items-center justify-center max-w-[860px] w-full max-h-[720px] h-full bg-white rounded-xl">
+        <p className="text-red-500">{error || "No se pudo cargar el perfil"}</p>
+      </div>
+    );
+  }
+
+  // Build slides from profile data
+  const slides = [];
+  
+  // First slide: Basic info with first image
+  if (profile.images && profile.images.length > 0) {
+    slides.push({
+      image: profile.images[0],
+      type: "basic",
+      name: profile.username,
+      age: profile.age,
+    });
+  }
+
+  // Description slide
+  if (profile.introduction) {
+    slides.push({
+      image: profile.images && profile.images.length > 0 ? profile.images[0] : "/default.jpg",
+      type: "description",
+      description: profile.introduction,
+    });
+  }
+
+  // Interests slide
+  if (profile.interests && profile.interests.length > 0) {
+    slides.push({
+      image: profile.images && profile.images.length > 1 ? profile.images[1] : profile.images[0],
+      type: "interests",
+      interests: profile.interests,
+    });
+  }
+
+  // Additional images as custom slides
+  if (profile.images && profile.images.length > 2) {
+    for (let i = 2; i < profile.images.length; i++) {
+      slides.push({
+        image: profile.images[i],
+        type: "custom",
+        title: profile.username,
+        content: `Foto ${i + 1}`,
+      });
+    }
+  }
+
+  const totalSlides = slides.length;
 
   const goNext = () => {
     setCurrentIndex((prev) => (prev + 1) % totalSlides);
@@ -57,7 +116,7 @@ export default function RightPanel({ animation }) {
           {/* STACK VERTICAL */}
         <div className="flex flex-col gap-8 h-full">
           
-          {profileData.slides.map((slide, index) => (
+          {slides.map((slide, index) => (
             <div
               key={index}
               className="w-full h-full flex-shrink-0"
@@ -66,6 +125,7 @@ export default function RightPanel({ animation }) {
               <img
                 src={slide.image}
                 className="rounded-lg w-full h-full object-cover "
+                alt={`Slide ${index + 1}`}
               />
             </div>
           ))}
@@ -81,28 +141,28 @@ export default function RightPanel({ animation }) {
         <div className="flex-1" />
 
         {/* Contenido dinámico según el tipo de slide */}
-        {profileData.slides[currentIndex].type === "basic" && (
+        {slides[currentIndex].type === "basic" && (
           <div>
             <h2 className="text-4xl font-bold mb-2">
-              {profileData.slides[currentIndex].name}, {profileData.slides[currentIndex].age}
+              {slides[currentIndex].name}, {slides[currentIndex].age}
             </h2>
           </div>
         )}
 
-        {profileData.slides[currentIndex].type === "description" && (
+        {slides[currentIndex].type === "description" && (
           <div className="mt-4 mb-4">
             <h3 className="text-xl font-semibold mb-3">Sobre mí</h3>
             <p className="text-gray-700 text-sm leading-relaxed">
-              {profileData.slides[currentIndex].description}
+              {slides[currentIndex].description}
             </p>
           </div>
         )}
 
-        {profileData.slides[currentIndex].type === "interests" && (
+        {slides[currentIndex].type === "interests" && (
           <div className="mt-4 mb-4">
             <h3 className="text-xl font-semibold mb-3">Mis intereses</h3>
             <div className="flex flex-wrap gap-2 justify-center">
-              {profileData.slides[currentIndex].interests.map((interest, idx) => (
+              {slides[currentIndex].interests.map((interest, idx) => (
                 <span
                   key={idx}
                   className="px-4 py-2 bg-orange-100 text-orange-600 rounded-full text-sm"
@@ -114,13 +174,13 @@ export default function RightPanel({ animation }) {
           </div>
         )}
 
-        {profileData.slides[currentIndex].type === "custom" && (
+        {slides[currentIndex].type === "custom" && (
           <div className="mt-4 mb-4">
             <h3 className="text-xl font-semibold mb-3">
-              {profileData.slides[currentIndex].title}
+              {slides[currentIndex].title}
             </h3>
             <p className="text-gray-700 text-sm leading-relaxed">
-              {profileData.slides[currentIndex].content}
+              {slides[currentIndex].content}
             </p>
           </div>
         )}

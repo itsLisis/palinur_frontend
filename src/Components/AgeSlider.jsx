@@ -28,6 +28,12 @@ export default function AgeSlider({onAgeChange}) {
 
   return (
     <div className="w-full max-w-lg mx-auto py-6">
+      {/* Números fijos a los lados */}
+      <div className="flex justify-between mb-2 px-1">
+        <span className="text-sm text-gray-600">18</span>
+        <span className="text-sm text-gray-600">99</span>
+      </div>
+
       <div className="relative h-12">
 
         {/* TRACK de fondo */}
@@ -62,9 +68,19 @@ export default function AgeSlider({onAgeChange}) {
           className="absolute inset-0 w-full bg-transparent appearance-none pointer-events-auto range-thumb z-[30]"
         />
 
-        {/* Labels */}
-        <span className="absolute left-0 -bottom-6 text-black font-semibold">{min}</span>
-        <span className="absolute right-0 -bottom-6 text-black font-semibold">{max}</span>
+        {/* Labels de valores seleccionados que se mueven */}
+        <span 
+          className="absolute -bottom-6 text-black font-semibold transform -translate-x-1/2"
+          style={{ left: `${((min - 18) / (99 - 18)) * 100}%` }}
+        >
+          {min}
+        </span>
+        <span 
+          className="absolute -bottom-6 text-black font-semibold transform -translate-x-1/2"
+          style={{ left: `${((max - 18) / (99 - 18)) * 100}%` }}
+        >
+          {max}
+        </span>
       </div>
     </div>
   );

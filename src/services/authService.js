@@ -76,4 +76,9 @@ export const authService = {
     const response = await api.delete(`/user/profile/image/${imageId}`);
     return response.data;
   },
+
+  getRandomProfile: async () => {
+    const response = await api.get("/user/profiles/random");
+    return response.data;
+  },
 };

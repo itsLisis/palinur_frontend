@@ -103,36 +103,46 @@ export default function Perfil() {
       <h2 className="text-center text-2xl font-semibold">{profile.username}, {profile.age}</h2>
 
       {/* Sección fotos */}
-      <div className="items-center">
-        <h3 className="font-semibold mb-2">Fotos ({profile.images?.length || 0}/6)</h3>
+      <div className="flex flex-col items-center">
+        <h3 className="font-semibold mb-2  self-start">Fotos</h3>
 
-        <div className="grid grid-cols-3 gap-5">
-          {(profile.images?.length || 0) < 6 && (
-            <label className={`w-20 h-20 bg-gray-200 rounded flex items-center justify-center text-3xl ${uploading ? 'cursor-wait opacity-50' : 'cursor-pointer hover:bg-gray-300'}`}>
-              <input 
-                type="file" 
-                className="hidden" 
-                accept="image/*"
-                onChange={handleImageUpload}
-                disabled={uploading}
-              />
-              {uploading ? "..." : "+"}
-            </label>
-          )}
-          {profile.images && profile.images.slice(0, 6).map((image, idx) => (
-            <div key={idx} className="relative w-20 h-20 bg-gray-200 rounded overflow-hidden group">
-              <img src={image} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
-              <button
-                onClick={() => handleImageDelete(profile.image_ids?.[idx])}
-                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-          {profile.images && Array.from({ length: Math.max(0, 5 - profile.images.length) }).map((_, idx) => (
-            <div key={`empty-${idx}`} className="w-20 h-20 bg-gray-200 rounded" />
-          ))}
+        <div className="grid grid-cols-3 gap-20 justify-items-center">
+          {Array.from({ length: 6 }).map((_, idx) => {
+            const hasImage = profile.images && profile.images[idx];
+            const canUpload = (profile.images?.length || 0) < 6;
+            const isFirstEmpty = idx === (profile.images?.length || 0);
+
+            if (hasImage) {
+              return (
+                <div key={idx} className="relative w-20 h-20 bg-gray-200 rounded overflow-hidden group">
+                  <img src={profile.images[idx]} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => handleImageDelete(profile.image_ids?.[idx])}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+              );
+            } else if (canUpload && isFirstEmpty) {
+              return (
+                <label key={idx} className={`w-20 h-20 bg-gray-200 rounded flex items-center justify-center text-3xl ${uploading ? 'cursor-wait opacity-50' : 'cursor-pointer hover:bg-gray-300'}`}>
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={uploading}
+                  />
+                  {uploading ? "..." : "+"}
+                </label>
+              );
+            } else {
+              return (
+                <div key={`empty-${idx}`} className="w-20 h-20 bg-gray-200 rounded" />
+              );
+            }
+          })}
         </div>
       </div>
 
