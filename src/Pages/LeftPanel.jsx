@@ -64,12 +64,14 @@ export default function LeftPanel() {
         </div>
 
         {/* Navegación (iconos de menú) */}
-        <div className="flex flex-col p-8 w-[85%] gap-4 mb-6">
+        <div className="flex flex-col w-[85%] gap-4 mb-6 overflow-y-auto">
+          <div className="p-8">
             {tab === "perfil" && <Perfil />}
             {tab === "historial" && <Historial/>}
             {tab === "ajustes" && <Ajustes />}
             {tab === "recomendaciones" && <Recomendaciones />}
             {tab === "notificaciones" && <Notificaciones />}
+          </div>
         </div>
     </div>
   );

@@ -70,12 +70,14 @@ export default function MainScreen() {
           </div>
         )}
         
-        <div className={`flex items-center justify-center w-full h-full ${animation}`}>
-          {index === 0 ? (
-            <RightPanel loadNextProfileRef={loadNextProfileRef} />
-          ) : (
-            <ChatPanel />
-          )}
+        <div className="flex items-center justify-center w-full h-full">
+          <div className={`w-full h-full ${animation}`}>
+            {index === 0 ? (
+              <RightPanel loadNextProfileRef={loadNextProfileRef} />
+            ) : (
+              <ChatPanel />
+            )}
+          </div>
         </div>
     </div>
 
