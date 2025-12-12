@@ -14,11 +14,30 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  const getFriendlyAuthError = (err) => {
+    if (!err?.response)
+      return "No se pudo conectar con el servidor. Intenta nuevamente.";
+
+    const status = err.response.status;
+    const detail = err.response?.data?.detail;
+    const text = typeof detail === "string" ? detail : "";
+
+    if (status === 422)
+      return "Datos inválidos. Revisa los campos e intenta de nuevo.";
+
+    if (text.includes("Captcha verification failed"))
+      return "La verificación falló. Completa el captcha e intenta nuevamente.";
+    if (text.includes("Email already registered"))
+      return "Este correo ya está registrado.";
+
+    return "No se pudo completar el registro. Intenta nuevamente.";
+  };
+
   const validatePassword = (password) => {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
     const hasMinLength = password.length >= 8;
-    
+
     if (!hasMinLength) {
       return "La contraseña debe tener al menos 8 caracteres";
     }
@@ -52,15 +71,12 @@ export default function RegisterPage() {
 
     try {
       const response = await register(email, password, turnstileToken);
-      // Guardar el token
       if (response.access_token) {
         localStorage.setItem("token", response.access_token);
       }
-      // Redirigir a creación de perfil después del registro exitoso
       navigate("/creacion");
     } catch (err) {
-      const errorMsg = err.response?.data?.detail || "Error en el registro";
-      setError(typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg));
+      setError(getFriendlyAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -69,7 +85,6 @@ export default function RegisterPage() {
   return (
     <PageTransition direction="right">
       <div className="flex h-screen font-albert">
-        {/*Columna izquierda*/}
         <div className="w-[45%] flex-col justify-center flex px-10">
           <h1 className="text-[32px] font-bold mb-5 -mt-50">¡Regístrate!</h1>
 
@@ -97,12 +112,12 @@ export default function RegisterPage() {
             className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300"
           />
           <p className="text-xs text-gray-600 mt-1">
-            La contraseña debe tener al menos 8 caracteres, una mayúscula y un número
+            La contraseña debe tener al menos 8 caracteres, una mayúscula y un
+            número
           </p>
           <div className="mt-4 flex justify-center">
             <TurnstileWidget onVerify={setTurnstileToken} />
           </div>
-
 
           <button
             onClick={handleRegister}

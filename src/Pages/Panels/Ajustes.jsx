@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import  AgeSlider  from "../../Components/AgeSlider"
+import AgeSlider from "../../Components/AgeSlider";
 import { authService } from "../../services/authService";
 
 export default function Ajustes() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [ageRange, setAgeRange] = useState({min:18, max:99});
+  const [ageRange, setAgeRange] = useState({ min: 18, max: 99 });
   const [maxDistance, setMaxDistance] = useState(25);
   const [notifications, setNotifications] = useState(true);
   const [profileVisible, setProfileVisible] = useState(true);
@@ -30,26 +30,41 @@ export default function Ajustes() {
 
   const handleAgeChange = (newRange) => {
     setAgeRange(newRange);
-    // TODO: Guardar preferencias en backend
     console.log("Rango de edad actualizado:", newRange);
   };
 
   const handleDistanceChange = (e) => {
     setMaxDistance(parseInt(e.target.value));
-    // TODO: Guardar preferencias en backend
   };
 
   const handleNotificationsToggle = () => {
     setNotifications(!notifications);
-    // TODO: Guardar preferencias en backend
   };
 
   const handleVisibilityToggle = () => {
     setProfileVisible(!profileVisible);
-    // TODO: Guardar preferencias en backend
   };
 
   const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
+  const handleDeleteAccount = async () => {
+    const ok = window.confirm(
+      "¿Seguro que quieres eliminar tu cuenta? Esta acción borra tu perfil, fotos, chats y matches. No se puede deshacer."
+    );
+    if (!ok) return;
+
+    try {
+      await authService.deleteAccount();
+    } catch (e) {
+      const msg = e.response?.data?.detail || "No se pudo eliminar la cuenta";
+      alert(typeof msg === "string" ? msg : JSON.stringify(msg));
+      return;
+    }
+
+    // Logout local + redirect
     logout();
     navigate("/");
   };
@@ -63,7 +78,6 @@ export default function Ajustes() {
   }
   return (
     <div className="flex flex-col gap-6">
-
       <h2 className="font-semibold text-3xl mb-2">Ajustes</h2>
 
       {/* Información de cuenta */}
@@ -82,7 +96,11 @@ export default function Ajustes() {
             <div className="flex justify-between">
               <span className="text-gray-600">Género:</span>
               <span className="font-medium">
-                {profile.gender_id === 1 ? 'Hombre' : profile.gender_id === 2 ? 'Mujer' : 'Otro'}
+                {profile.gender_id === 1
+                  ? "Hombre"
+                  : profile.gender_id === 2
+                  ? "Mujer"
+                  : "Otro"}
               </span>
             </div>
           </div>
@@ -92,15 +110,17 @@ export default function Ajustes() {
       {/* Preferencias de notificación */}
       <div className="border-t pt-4">
         <h3 className="font-semibold text-lg mb-3">Notificaciones</h3>
-        
+
         <div className="flex items-center justify-between py-2">
           <div>
             <p className="font-medium">Notificaciones push</p>
-            <p className="text-sm text-gray-600">Recibir alertas de nuevos matches</p>
+            <p className="text-sm text-gray-600">
+              Recibir alertas de nuevos matches
+            </p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={notifications}
               onChange={handleNotificationsToggle}
               className="sr-only peer"
@@ -113,15 +133,17 @@ export default function Ajustes() {
       {/* Preferencias de privacidad */}
       <div className="border-t pt-4">
         <h3 className="font-semibold text-lg mb-3">Privacidad</h3>
-        
+
         <div className="flex items-center justify-between py-2">
           <div>
             <p className="font-medium">Perfil visible</p>
-            <p className="text-sm text-gray-600">Otros usuarios pueden ver tu perfil</p>
+            <p className="text-sm text-gray-600">
+              Otros usuarios pueden ver tu perfil
+            </p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={profileVisible}
               onChange={handleVisibilityToggle}
               className="sr-only peer"
@@ -134,11 +156,11 @@ export default function Ajustes() {
       {/* Preferencias de búsqueda */}
       <div className="border-t pt-4">
         <h3 className="font-semibold text-lg mb-4">Preferencias de búsqueda</h3>
-        
+
         <div className="flex flex-col gap-4">
           <div>
             <label className="font-medium mb-2 block">Rango de edad</label>
-            <AgeSlider onAgeChange={handleAgeChange}/>
+            <AgeSlider onAgeChange={handleAgeChange} />
             <p className="text-sm text-gray-600 mt-1">
               Buscando personas entre {ageRange.min} y {ageRange.max} años
             </p>
@@ -147,15 +169,17 @@ export default function Ajustes() {
           <div>
             <label className="font-medium mb-2 block">Distancia máxima</label>
             <div className="flex items-center gap-3">
-              <input 
-                type="range" 
-                min="1" 
-                max="100" 
+              <input
+                type="range"
+                min="1"
+                max="100"
                 value={maxDistance}
                 onChange={handleDistanceChange}
                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#CE603E]"
               />
-              <span className="font-medium min-w-[60px] text-right">{maxDistance} km</span>
+              <span className="font-medium min-w-[60px] text-right">
+                {maxDistance} km
+              </span>
             </div>
             <p className="text-sm text-gray-600 mt-1">
               Mostrar perfiles dentro de {maxDistance} kilómetros
@@ -166,16 +190,19 @@ export default function Ajustes() {
 
       {/* Acciones de cuenta */}
       <div className="border-t pt-4 space-y-3">
-
-
-        <button 
-          onClick={handleLogout} 
-          className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-medium transition-colors"
+        <button
+          onClick={handleLogout}
+          className="w-full bg-[#CE603E] hover:bg-[#b14e32] text-white py-3 rounded-lg font-medium transition-colors"
         >
           Cerrar sesión
         </button>
+        <button
+          onClick={handleDeleteAccount}
+          className="w-full bg-[#CE603E] hover:bg-[#b14e32] text-white py-3 rounded-lg font-medium transition-colors"
+        >
+          Eliminar cuenta
+        </button>
       </div>
-
     </div>
   );
 }

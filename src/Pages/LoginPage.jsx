@@ -14,6 +14,31 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const getFriendlyAuthError = (err) => {
+    // Network / server unreachable
+    if (!err?.response)
+      return "No se pudo conectar con el servidor. Intenta nuevamente.";
+
+    const status = err.response.status;
+    const detail = err.response?.data?.detail;
+    const text = typeof detail === "string" ? detail : "";
+
+    if (status === 422)
+      return "Datos inválidos. Revisa los campos e intenta de nuevo.";
+
+    if (text.includes("Captcha verification failed"))
+      return "La verificación falló. Completa el captcha e intenta nuevamente.";
+    if (text.includes("This Email is not registered"))
+      return "Este correo no está registrado.";
+    if (text.includes("Invalid email or password"))
+      return "Correo o contraseña incorrectos.";
+    if (text.includes("Email already registered"))
+      return "Este correo ya está registrado.";
+
+    // Fallback: if backend returns something else, show a generic message
+    return "No se pudo iniciar sesión. Verifica tus datos e intenta nuevamente.";
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -33,8 +58,7 @@ export default function LoginPage() {
         navigate("/creacion");
       }
     } catch (err) {
-      const errorMsg = err.response?.data?.detail || "Error en el login";
-      setError(typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg));
+      setError(getFriendlyAuthError(err));
     } finally {
       setLoading(false);
     }

@@ -1,20 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { authService } from "../services/authService";
 
-export default function RightPanel({ loadNextProfileRef, handleSwipeRef, onMatchFound }) {
+export default function RightPanel({
+  loadNextProfileRef,
+  handleSwipeRef,
+  onMatchFound,
+}) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadPotentialMatch = async () => {
+  const loadPotentialMatch = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      // Obtener perfil potencial del matching service
       const data = await authService.getPotentialMatches();
-      
+
       if (data.profiles && data.profiles.length > 0) {
         setProfile(data.profiles[0]);
         setCurrentIndex(0);
@@ -28,48 +31,59 @@ export default function RightPanel({ loadNextProfileRef, handleSwipeRef, onMatch
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleSwipe = async (isLike) => {
-    if (!profile) return;
+  const handleSwipe = useCallback(
+    async (isLike) => {
+      if (!profile) return;
 
-    try {
-      // Hacer swipe en el backend
-      const result = await authService.swipeUser(profile.id, isLike);
-      
-      // Si hay match, cambiar a vista de chat
-      if (result.is_match) {
-        console.log("¡MATCH!", result);
-        
-        // Obtener información del match activo
-        const matchInfo = await authService.getActiveMatch(result.sender_user_id);
-        
-        if (matchInfo.has_active_match && onMatchFound) {
-          onMatchFound(matchInfo);
+      try {
+        // Hacer swipe en el backend
+        const result = await authService.swipeUser(profile.id, isLike);
+
+        if (result.is_match) {
+          console.log("¡MATCH!", result);
+
+          const currentUserId = parseInt(localStorage.getItem("userId"));
+          const matchInfo = await authService.getActiveMatch(currentUserId);
+
+          // Importante: solo abrir chat si el partner coincide con el perfil swipeado
+          if (
+            matchInfo.has_active_match &&
+            matchInfo.partner_id === profile.id &&
+            onMatchFound
+          ) {
+            onMatchFound(matchInfo);
+          } else {
+            loadPotentialMatch();
+          }
+        } else {
+          loadPotentialMatch();
         }
-      } else {
-        // No hay match, cargar siguiente perfil
-        loadPotentialMatch();
+      } catch (err) {
+        console.error("Error al hacer swipe:", err);
+        setError("Error al procesar swipe");
+        // Intentar cargar siguiente perfil de todas formas
+        setTimeout(() => loadPotentialMatch(), 1000);
       }
-    } catch (err) {
-      console.error("Error al hacer swipe:", err);
-      setError("Error al procesar swipe");
-      // Intentar cargar siguiente perfil de todas formas
-      setTimeout(() => loadPotentialMatch(), 1000);
-    }
-  };
+    },
+    [profile, onMatchFound, loadPotentialMatch]
+  );
 
   useEffect(() => {
     loadPotentialMatch();
-    
-    // Asignar funciones a los refs para que MainScreen pueda llamarlas
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Asignar refs cuando las funciones cambien
+  useEffect(() => {
     if (loadNextProfileRef) {
       loadNextProfileRef.current = loadPotentialMatch;
     }
     if (handleSwipeRef) {
       handleSwipeRef.current = handleSwipe;
     }
-  }, [loadNextProfileRef, handleSwipeRef]);
+  }, [loadNextProfileRef, handleSwipeRef, loadPotentialMatch, handleSwipe]);
 
   if (loading) {
     return (
@@ -89,7 +103,7 @@ export default function RightPanel({ loadNextProfileRef, handleSwipeRef, onMatch
 
   // Build slides from profile data
   const slides = [];
-  
+
   // First slide: Basic info with first image
   if (profile.images && profile.images.length > 0) {
     slides.push({
@@ -103,7 +117,10 @@ export default function RightPanel({ loadNextProfileRef, handleSwipeRef, onMatch
   // Description slide
   if (profile.introduction) {
     slides.push({
-      image: profile.images && profile.images.length > 0 ? profile.images[0] : "/default.jpg",
+      image:
+        profile.images && profile.images.length > 0
+          ? profile.images[0]
+          : "/default.jpg",
       type: "description",
       description: profile.introduction,
     });
@@ -112,7 +129,10 @@ export default function RightPanel({ loadNextProfileRef, handleSwipeRef, onMatch
   // Interests slide
   if (profile.interests && profile.interests.length > 0) {
     slides.push({
-      image: profile.images && profile.images.length > 1 ? profile.images[1] : profile.images[0],
+      image:
+        profile.images && profile.images.length > 1
+          ? profile.images[1]
+          : profile.images[0],
       type: "interests",
       interests: profile.interests,
     });
@@ -141,39 +161,34 @@ export default function RightPanel({ loadNextProfileRef, handleSwipeRef, onMatch
   };
 
   return (
-    <div className="flex relative max-w-[860px] w-full max-h-[720px] h-full bg-white rounded-xl p-6 overflow-hidden">
-      
-          {/* SLIDER VERTICAL DE IMÁGENES */}
-    <div className="relative w-[60%] h-full p-3 overflow-hidden">
-      {/* CONTENEDOR INTERNO QUE SE MUEVE */}
-      <div
-        className="h-full gap-4 transition-transform duration-500"
-        style={{
-          transform: `translateY(-${currentIndex * 105}%)`,
-        }}
-      >
+    <div className="flex relative max-w-[860px] w-full max-h-[720px] h-full bg-white rounded-xl p-6 overflow-hidden mx-auto">
+      {/* SLIDER VERTICAL DE IMÁGENES */}
+      <div className="relative w-[60%] h-full p-3 overflow-hidden">
+        {/* CONTENEDOR INTERNO QUE SE MUEVE */}
+        <div
+          className="h-full gap-4 transition-transform duration-500"
+          style={{
+            transform: `translateY(-${currentIndex * 105}%)`,
+          }}
+        >
           {/* STACK VERTICAL */}
-        <div className="flex flex-col gap-8 h-full">
-          
-          {slides.map((slide, index) => (
-            <div
-              key={index}
-              className="w-full h-full flex-shrink-0"
-              style={{ height: "100%" }} // asegura altura igual
-            >
-              <img
-                src={slide.image}
-                className="rounded-lg w-full h-full object-cover "
-                alt={`Slide ${index + 1}`}
-              />
-            </div>
-          ))}
-
+          <div className="flex flex-col gap-8 h-full">
+            {slides.map((slide, index) => (
+              <div
+                key={index}
+                className="w-full h-full flex-shrink-0"
+                style={{ height: "100%" }} // asegura altura igual
+              >
+                <img
+                  src={slide.image}
+                  className="rounded-lg w-full h-full object-cover "
+                  alt={`Slide ${index + 1}`}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-
-
 
       {/* PANEL DERECHO SINCRONIZADO */}
       <div className="flex flex-col justify-end text-center bg-white w-[40%] h-full p-6 transition-opacity duration-300">
@@ -185,6 +200,9 @@ export default function RightPanel({ loadNextProfileRef, handleSwipeRef, onMatch
             <h2 className="text-4xl font-bold mb-2">
               {slides[currentIndex].name}, {slides[currentIndex].age}
             </h2>
+            <p className="text-gray-700 text-sm leading-relaxed mt-3">
+              {profile.introduction || "Sin descripción"}
+            </p>
           </div>
         )}
 
@@ -230,14 +248,14 @@ export default function RightPanel({ loadNextProfileRef, handleSwipeRef, onMatch
           onClick={goPrev}
           className="w-12 h-12 bg-[#D8E2DC] rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-xl"
         >
-          <ChevronUpIcon className="w-6 h-6 text-[#7D7D7D]"/>
+          <ChevronUpIcon className="w-6 h-6 text-[#7D7D7D]" />
         </button>
 
         <button
           onClick={goNext}
           className="w-12 h-12 bg-[#D8E2DC] rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-xl"
         >
-          <ChevronDownIcon className="w-6 h-6 text-[#7D7D7D]"/>
+          <ChevronDownIcon className="w-6 h-6 text-[#7D7D7D]" />
         </button>
       </div>
     </div>

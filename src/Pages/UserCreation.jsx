@@ -25,7 +25,6 @@ export default function UserCreation() {
   const { updateToken } = useAuth();
   const navigate = useNavigate();
 
-  // Cargar opciones al montar el componente
   useEffect(() => {
     const loadOptions = async () => {
       try {
@@ -34,7 +33,6 @@ export default function UserCreation() {
         setSexualOrientations(response.data.sexual_orientations || []);
         setInterests(response.data.interests || []);
       } catch (err) {
-        // Si el error es 403 o 400, significa que el perfil ya está completo
         if (err.response?.status === 403 || err.response?.status === 400) {
           console.log("Profile already complete, redirecting...");
           navigate("/principal");
@@ -74,7 +72,6 @@ export default function UserCreation() {
         image_urls: imageUrls,
       });
 
-      // Actualizar el token y el estado de perfil completado
       if (response.data.access_token) {
         updateToken(response.data.access_token, response.data.complete_profile);
       }
@@ -82,7 +79,6 @@ export default function UserCreation() {
       // Redirigir al home
       navigate("/principal");
     } catch (err) {
-      // Si el perfil ya existe, redirigir en lugar de mostrar error
       const errorDetail = err.response?.data?.detail;
       const errorMessage =
         typeof errorDetail === "string"
@@ -110,7 +106,6 @@ export default function UserCreation() {
   return (
     <PageTransition direction="right">
       <div className="flex h-screen font-albert">
-        {/*Columna izquierda*/}
         <div className="w-[45%] flex-col justify-center flex px-10 overflow-y-auto py-8">
           <h1 className="text-[32px] font-bold mb-5">Completa tu perfil</h1>
 

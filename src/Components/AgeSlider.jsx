@@ -1,12 +1,11 @@
 import { useState } from "react";
 
-export default function AgeSlider({onAgeChange}) {
+export default function AgeSlider({ onAgeChange }) {
   const [min, setMin] = useState(18);
   const [max, setMax] = useState(99);
 
   const handleMinChange = (e) => {
     const newMin = parseInt(e.target.value);
-    // El mínimo no puede ser mayor que el máximo
     if (newMin <= max) {
       setMin(newMin);
       if (onAgeChange) {
@@ -17,7 +16,6 @@ export default function AgeSlider({onAgeChange}) {
 
   const handleMaxChange = (e) => {
     const newMax = parseInt(e.target.value);
-    // El máximo no puede ser menor que el mínimo
     if (newMax >= min) {
       setMax(newMax);
       if (onAgeChange) {
@@ -35,7 +33,6 @@ export default function AgeSlider({onAgeChange}) {
       </div>
 
       <div className="relative h-12">
-
         {/* TRACK de fondo */}
         <div className="absolute top-1/2 w-full h-2 bg-[#DEE7E2] rounded-full -translate-y-1/2"></div>
 
@@ -69,13 +66,13 @@ export default function AgeSlider({onAgeChange}) {
         />
 
         {/* Labels de valores seleccionados que se mueven */}
-        <span 
+        <span
           className="absolute -bottom-6 text-black font-semibold transform -translate-x-1/2"
           style={{ left: `${((min - 18) / (99 - 18)) * 100}%` }}
         >
           {min}
         </span>
-        <span 
+        <span
           className="absolute -bottom-6 text-black font-semibold transform -translate-x-1/2"
           style={{ left: `${((max - 18) / (99 - 18)) * 100}%` }}
         >

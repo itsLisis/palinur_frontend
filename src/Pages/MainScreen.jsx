@@ -1,9 +1,10 @@
 import LeftPanel from "./LeftPanel";
 import RightPanel from "./RightPanel";
 import ChatPanel from "./ChatPanel";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { HeartIcon } from "@heroicons/react/24/solid";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { authService } from "../services/authService";
 
 export default function MainScreen() {
   const [index, setIndex] = useState(0); // 0 = tarjetas, 1 = chat
@@ -13,11 +14,39 @@ export default function MainScreen() {
   const loadNextProfileRef = useRef(null);
   const handleSwipeRef = useRef(null); // Para manejar swipes desde MainScreen
 
+  useEffect(() => {
+    const checkActiveMatch = async () => {
+      try {
+        const userId = parseInt(localStorage.getItem("userId"));
+        if (!userId) return;
+
+        const matchInfo = await authService.getActiveMatch(userId);
+
+        if (matchInfo.has_active_match) {
+          setMatchData(matchInfo);
+          setIndex(1); // Ir directo al chat
+        }
+      } catch (err) {
+        console.error("Error verificando match activo:", err);
+      }
+    };
+
+    checkActiveMatch();
+  }, []);
+
   // Callback para cuando hay match
-  const onMatchFound = (matchInfo) => {
+  const onMatchFound = useCallback((matchInfo) => {
     setMatchData(matchInfo);
     setIndex(1); // Cambiar a vista de chat
-  };
+  }, []);
+
+  const onDismatch = useCallback(() => {
+    setMatchData(null);
+    setIndex(0);
+    if (loadNextProfileRef.current) {
+      loadNextProfileRef.current();
+    }
+  }, []);
 
   const animateLeft = () => {
     setAnimation("animate-slide-left");
@@ -79,13 +108,13 @@ export default function MainScreen() {
         <div className="flex items-center justify-center w-full h-full">
           <div className={`w-full h-full ${animation}`}>
             {index === 0 ? (
-              <RightPanel 
-                loadNextProfileRef={loadNextProfileRef} 
+              <RightPanel
+                loadNextProfileRef={loadNextProfileRef}
                 handleSwipeRef={handleSwipeRef}
                 onMatchFound={onMatchFound}
               />
             ) : (
-              <ChatPanel matchData={matchData} />
+              <ChatPanel matchData={matchData} onDismatch={onDismatch} />
             )}
           </div>
         </div>

@@ -60,6 +60,24 @@ export const authService = {
     return response.data;
   },
 
+  getProfileOptions: async () => {
+    const response = await api.get("/user/options");
+    return response.data;
+  },
+
+  updateUserProfile: async ({ introduction, interest_ids }) => {
+    const response = await api.patch("/user/profile", {
+      introduction,
+      interest_ids,
+    });
+    return response.data;
+  },
+
+  getProfileById: async (userId) => {
+    const response = await api.get(`/user/profile/${userId}`);
+    return response.data;
+  },
+
   uploadProfileImage: async (file) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -74,6 +92,11 @@ export const authService = {
 
   deleteProfileImage: async (imageId) => {
     const response = await api.delete(`/user/profile/image/${imageId}`);
+    return response.data;
+  },
+
+  deleteAccount: async () => {
+    const response = await api.delete("/user/account");
     return response.data;
   },
 
@@ -102,6 +125,18 @@ export const authService = {
     const response = await api.get(
       `/matching/relationships/user/${userId}/active`
     );
+    return response.data;
+  },
+
+  dismatch: async (relationshipId) => {
+    const response = await api.post("/matching/dismatch", null, {
+      params: { relationship_id: relationshipId },
+    });
+    return response.data;
+  },
+
+  getConnectionsHistory: async () => {
+    const response = await api.get("/matching/connections");
     return response.data;
   },
 
@@ -172,19 +207,18 @@ export const authService = {
     return ws;
   },
 
-  // Enviar mensaje via WebSocket
-  sendMessage: (ws, content) => {
+  sendMessage: (ws, content, client_message_id = null) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(
         JSON.stringify({
           type: "message",
           content: content,
+          client_message_id,
         })
       );
     }
   },
 
-  // Enviar indicador de "escribiendo..."
   sendTyping: (ws, isTyping) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(
@@ -196,7 +230,6 @@ export const authService = {
     }
   },
 
-  // Marcar mensaje como leído via WebSocket
   markMessageRead: (ws, messageId) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(

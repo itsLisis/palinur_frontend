@@ -3,13 +3,11 @@ import Perfil from "./Panels/Perfil";
 import Ajustes from "./Panels/Ajustes";
 import Historial from "./Panels/Historial";
 import Recomendaciones from "./Panels/Recomendaciones";
-import Notificaciones from "./Panels/Notificaciones";
 import {
   UserCircleIcon,
   Cog6ToothIcon,
   ClockIcon,
   ExclamationCircleIcon,
-  BellIcon,
 } from "@heroicons/react/24/outline";
 
 export default function LeftPanel() {
@@ -79,21 +77,6 @@ export default function LeftPanel() {
               <ExclamationCircleIcon className="w-12 h-12 stroke-[2] text-[#FFFFFF]" />
             </button>
           )}
-          {tab === "notificaciones" ? (
-            <button
-              className="pl-4 pr-4 pt-2 pb-2 rounded-l-2xl w-full bg-white "
-              onClick={() => setTab("notificaciones")}
-            >
-              <BellIcon className="w-12 h-12 stroke-[2] text-[#1A2E53]" />
-            </button>
-          ) : (
-            <button
-              className="pl-4 pr-4 pt-2 pb-2"
-              onClick={() => setTab("notificaciones")}
-            >
-              <BellIcon className="w-12 h-12 stroke-[2] text-[#FFFFFF]" />
-            </button>
-          )}
         </div>
       </div>
 
@@ -104,7 +87,6 @@ export default function LeftPanel() {
           {tab === "historial" && <Historial />}
           {tab === "ajustes" && <Ajustes />}
           {tab === "recomendaciones" && <Recomendaciones />}
-          {tab === "notificaciones" && <Notificaciones />}
         </div>
       </div>
     </div>
