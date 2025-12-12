@@ -12,17 +12,17 @@ export default function UserCreation() {
   const [genderId, setGenderId] = useState("");
   const [sexualOrientationId, setSexualOrientationId] = useState("");
   const [interestIds, setInterestIds] = useState([]);
-  const [imageUrls, setImageUrls] = useState([]);
+  const imageUrls = [];
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   // Datos desde el backend
   const [genders, setGenders] = useState([]);
   const [sexualOrientations, setSexualOrientations] = useState([]);
   const [interests, setInterests] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
-  
-  const { token, updateToken } = useAuth();
+
+  const { updateToken } = useAuth();
   const navigate = useNavigate();
 
   // Cargar opciones al montar el componente
@@ -46,14 +46,14 @@ export default function UserCreation() {
         setLoadingData(false);
       }
     };
-    
+
     loadOptions();
   }, [navigate]);
 
   const toggleInterest = (interestId) => {
-    setInterestIds(prev => 
-      prev.includes(interestId) 
-        ? prev.filter(id => id !== interestId)
+    setInterestIds((prev) =>
+      prev.includes(interestId)
+        ? prev.filter((id) => id !== interestId)
         : [...prev, interestId]
     );
   };
@@ -64,18 +64,15 @@ export default function UserCreation() {
     setLoading(true);
 
     try {
-      const response = await authService.api.post(
-        "/user/complete_profile",
-        {
-          username,
-          introduction,
-          birthday,
-          gender_id: parseInt(genderId),
-          sexual_orientation_id: parseInt(sexualOrientationId),
-          interest_ids: interestIds,
-          image_urls: imageUrls,
-        }
-      );
+      const response = await authService.api.post("/user/complete_profile", {
+        username,
+        introduction,
+        birthday,
+        gender_id: parseInt(genderId),
+        sexual_orientation_id: parseInt(sexualOrientationId),
+        interest_ids: interestIds,
+        image_urls: imageUrls,
+      });
 
       // Actualizar el token y el estado de perfil completado
       if (response.data.access_token) {
@@ -87,14 +84,20 @@ export default function UserCreation() {
     } catch (err) {
       // Si el perfil ya existe, redirigir en lugar de mostrar error
       const errorDetail = err.response?.data?.detail;
-      const errorMessage = typeof errorDetail === 'string' ? errorDetail : JSON.stringify(errorDetail);
-      
-      if (err.response?.status === 400 && errorMessage.includes("already exists")) {
+      const errorMessage =
+        typeof errorDetail === "string"
+          ? errorDetail
+          : JSON.stringify(errorDetail);
+
+      if (
+        err.response?.status === 400 &&
+        errorMessage.includes("already exists")
+      ) {
         console.log("Profile already exists, redirecting...");
         navigate("/principal");
         return;
       }
-      
+
       const errorMsg = errorDetail || "Error al completar perfil";
       setError(
         typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg)
@@ -174,7 +177,9 @@ export default function UserCreation() {
             ))}
           </select>
 
-          <label className="mt-4 text-base">Intereses (selecciona varios)</label>
+          <label className="mt-4 text-base">
+            Intereses (selecciona varios)
+          </label>
           <div className="mt-2 flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border border-gray-300 rounded-md">
             {interests.map((interest) => (
               <button

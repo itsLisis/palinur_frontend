@@ -2,19 +2,26 @@ import { useState, useEffect } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { authService } from "../services/authService";
 
-export default function RightPanel({ loadNextProfileRef }) {
+export default function RightPanel({ loadNextProfileRef, handleSwipeRef, onMatchFound }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadRandomProfile = async () => {
+  const loadPotentialMatch = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await authService.getRandomProfile();
-      setProfile(data);
-      setCurrentIndex(0);
+      // Obtener perfil potencial del matching service
+      const data = await authService.getPotentialMatches();
+      
+      if (data.profiles && data.profiles.length > 0) {
+        setProfile(data.profiles[0]);
+        setCurrentIndex(0);
+      } else {
+        setProfile(null);
+        setError("No hay más perfiles disponibles");
+      }
     } catch (err) {
       setError("Error al cargar perfil");
       console.error(err);
@@ -23,14 +30,46 @@ export default function RightPanel({ loadNextProfileRef }) {
     }
   };
 
-  useEffect(() => {
-    loadRandomProfile();
-    
-    // Asignar la función al ref para que MainScreen pueda llamarla
-    if (loadNextProfileRef) {
-      loadNextProfileRef.current = loadRandomProfile;
+  const handleSwipe = async (isLike) => {
+    if (!profile) return;
+
+    try {
+      // Hacer swipe en el backend
+      const result = await authService.swipeUser(profile.id, isLike);
+      
+      // Si hay match, cambiar a vista de chat
+      if (result.is_match) {
+        console.log("¡MATCH!", result);
+        
+        // Obtener información del match activo
+        const matchInfo = await authService.getActiveMatch(result.sender_user_id);
+        
+        if (matchInfo.has_active_match && onMatchFound) {
+          onMatchFound(matchInfo);
+        }
+      } else {
+        // No hay match, cargar siguiente perfil
+        loadPotentialMatch();
+      }
+    } catch (err) {
+      console.error("Error al hacer swipe:", err);
+      setError("Error al procesar swipe");
+      // Intentar cargar siguiente perfil de todas formas
+      setTimeout(() => loadPotentialMatch(), 1000);
     }
-  }, [loadNextProfileRef]);
+  };
+
+  useEffect(() => {
+    loadPotentialMatch();
+    
+    // Asignar funciones a los refs para que MainScreen pueda llamarlas
+    if (loadNextProfileRef) {
+      loadNextProfileRef.current = loadPotentialMatch;
+    }
+    if (handleSwipeRef) {
+      handleSwipeRef.current = handleSwipe;
+    }
+  }, [loadNextProfileRef, handleSwipeRef]);
 
   if (loading) {
     return (

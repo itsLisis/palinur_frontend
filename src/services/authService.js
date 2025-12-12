@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -28,7 +28,7 @@ api.interceptors.response.use(
 
 export const authService = {
   api,
-  
+
   register: async (email, password, turnstile_token) => {
     const response = await api.post("/auth/register", {
       email,
@@ -63,7 +63,7 @@ export const authService = {
   uploadProfileImage: async (file) => {
     const formData = new FormData();
     formData.append("file", file);
-    
+
     const response = await api.post("/user/profile/upload-image", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -80,5 +80,131 @@ export const authService = {
   getRandomProfile: async () => {
     const response = await api.get("/user/profiles/random");
     return response.data;
+  },
+
+  // ============ MATCHING SERVICE ============
+
+  getPotentialMatches: async () => {
+    const response = await api.get("/matching/potential");
+    return response.data;
+  },
+
+  swipeUser: async (userId, isLike) => {
+    const response = await api.post("/matching/swipe", {
+      user_id: userId,
+      is_like: isLike,
+      date: new Date().toISOString(),
+    });
+    return response.data;
+  },
+
+  getActiveMatch: async (userId) => {
+    const response = await api.get(
+      `/matching/relationships/user/${userId}/active`
+    );
+    return response.data;
+  },
+
+  // ============ CHAT SERVICE ============
+
+  getChats: async (skip = 0, limit = 20) => {
+    const response = await api.get("/chat/chats", {
+      params: { skip, limit },
+    });
+    return response.data;
+  },
+
+  getMessages: async (chatId, page = 1, pageSize = 50) => {
+    const response = await api.get(`/chat/chats/${chatId}/messages`, {
+      params: { page, page_size: pageSize },
+    });
+    return response.data;
+  },
+
+  markMessagesAsRead: async (chatId) => {
+    const response = await api.post(`/chat/chats/${chatId}/read`);
+    return response.data;
+  },
+
+  getChatByRelationship: async (relationshipId) => {
+    const response = await api.get(
+      `/chat/chats/by-relationship/${relationshipId}`
+    );
+    return response.data;
+  },
+
+  // WebSocket para chat en tiempo real
+  connectChatWebSocket: (onMessage, onError, onClose) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No token available");
+    }
+
+    const wsBaseUrl = (
+      process.env.REACT_APP_API_URL || "http://localhost:8000"
+    ).replace("http", "ws");
+    const wsUrl = `${wsBaseUrl}/chat/ws/${token}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log("WebSocket connected");
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        onMessage(data);
+      } catch (error) {
+        console.error("Error parsing WebSocket message:", error);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      if (onError) onError(error);
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket disconnected");
+      if (onClose) onClose();
+    };
+
+    return ws;
+  },
+
+  // Enviar mensaje via WebSocket
+  sendMessage: (ws, content) => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(
+        JSON.stringify({
+          type: "message",
+          content: content,
+        })
+      );
+    }
+  },
+
+  // Enviar indicador de "escribiendo..."
+  sendTyping: (ws, isTyping) => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(
+        JSON.stringify({
+          type: "typing",
+          is_typing: isTyping,
+        })
+      );
+    }
+  },
+
+  // Marcar mensaje como leído via WebSocket
+  markMessageRead: (ws, messageId) => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(
+        JSON.stringify({
+          type: "read",
+          message_id: messageId,
+        })
+      );
+    }
   },
 };
