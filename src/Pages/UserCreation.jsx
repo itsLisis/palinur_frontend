@@ -34,6 +34,12 @@ export default function UserCreation() {
         setSexualOrientations(response.data.sexual_orientations || []);
         setInterests(response.data.interests || []);
       } catch (err) {
+        // Si el error es 403 o 400, significa que el perfil ya está completo
+        if (err.response?.status === 403 || err.response?.status === 400) {
+          console.log("Profile already complete, redirecting...");
+          navigate("/principal");
+          return;
+        }
         setError("Error al cargar las opciones");
         console.error(err);
       } finally {
@@ -42,7 +48,7 @@ export default function UserCreation() {
     };
     
     loadOptions();
-  }, []);
+  }, [navigate]);
 
   const toggleInterest = (interestId) => {
     setInterestIds(prev => 
@@ -79,8 +85,17 @@ export default function UserCreation() {
       // Redirigir al home
       navigate("/principal");
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.detail || "Error al completar perfil";
+      // Si el perfil ya existe, redirigir en lugar de mostrar error
+      const errorDetail = err.response?.data?.detail;
+      const errorMessage = typeof errorDetail === 'string' ? errorDetail : JSON.stringify(errorDetail);
+      
+      if (err.response?.status === 400 && errorMessage.includes("already exists")) {
+        console.log("Profile already exists, redirecting...");
+        navigate("/principal");
+        return;
+      }
+      
+      const errorMsg = errorDetail || "Error al completar perfil";
       setError(
         typeof errorMsg === "string" ? errorMsg : JSON.stringify(errorMsg)
       );

@@ -166,23 +166,13 @@ export default function Ajustes() {
 
       {/* Acciones de cuenta */}
       <div className="border-t pt-4 space-y-3">
-        <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-lg font-medium transition-colors">
-          Editar perfil
-        </button>
-        
-        <button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-lg font-medium transition-colors">
-          Cambiar contraseña
-        </button>
+
 
         <button 
           onClick={handleLogout} 
           className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-medium transition-colors"
         >
           Cerrar sesión
-        </button>
-
-        <button className="w-full text-red-600 hover:text-red-700 py-2 text-sm font-medium transition-colors">
-          Eliminar cuenta
         </button>
       </div>
 
